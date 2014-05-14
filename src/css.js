@@ -335,6 +335,50 @@ jQuery.extend({
 			val = cssNormalTransform[ name ];
 		}
 
+		// Convert "auto" or "" to pixel value (for IE8/9)
+		if ( ( val === "" || val.indexOf( "auto" ) > -1 ) && extra !== "auto" ) {
+			if ( /^margin/.test( name ) ) {
+				if ( /^(absolute|fixed)$/.test( jQuery.css( elem, "position" ) ) ) {
+					val = val.replace(/auto/g, "0px");
+				} else if ( elem.parentNode ) {
+					valOrig = val;
+					val = jQuery.css( elem.parentNode, "width", "" ) - jQuery( elem ).outerWidth();
+					val = parseInt( val / 2 );
+					switch ( name ) {
+					case "margin":
+						mTop    = jQuery.css( elem, "marginTop" );
+						mRight  = jQuery.css( elem, "marginRight" );
+						mBottom = jQuery.css( elem, "marginBottom" );
+						mLeft   = jQuery.css( elem, "marginLeft" );
+						val = mTop;
+						if ( mTop !== mRight ) {
+							val += " " + mRight;
+						}
+						if ( mLeft !== mRight || mTop !== mBottom ) {
+							val += " " + mBottom;
+						}
+						if ( mLeft !== mRight ) {
+							val += " " + mLeft;
+						}
+					break;
+					case "marginTop":
+					case "marginBottom":
+						val = "0px";
+					break;
+					case "marginLeft":
+					case "marginRight":
+						margin = jQuery.css( elem, valOrig === "marginLeft" ? "marginRight" : "marginLeft", "auto" );
+						if ( margin !== "auto" ) {
+							val = val * 2 - margin + "px";
+						} else {
+							val += "px";
+						}
+					break;
+					}
+				}
+			}
+		}
+
 		// Return, converting to number if forced or a qualifier was provided and val looks numeric
 		if ( extra === "" || extra ) {
 			num = parseFloat( val );
